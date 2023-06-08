@@ -9,7 +9,7 @@ A widget framework on top of Bloc.
 ```Smalltalk
 Metacello new
 	baseline: 'Toplo';
-	repository: 'github://plantec/Toplo/src';
+	repository: 'github://Enzo-Demeulenaere/Toplo/src';
 	onConflictUseIncoming;
 	load
 ```
@@ -29,7 +29,7 @@ This branch contains some examples to use the default Toplot look and feel inspi
 ```Smalltalk
 Metacello new
          baseline: 'Toplo';
-         repository: 'github://plantec/Toplo:dev-lookandfeel';
+         repository: 'github://Enzo-Demeulenaere/Toplo:dev-lookandfeel';
          onConflictUseIncoming;
          load
 ```
