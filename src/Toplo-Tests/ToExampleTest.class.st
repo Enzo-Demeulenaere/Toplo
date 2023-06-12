@@ -7,5 +7,5 @@ Class {
 { #category : #accessing }
 ToExampleTest class >> testSelectors [
 	
-	^ (self class selectors select: [ :each | (each beginsWith: 'example_B') and: [each numArgs isZero]])
+	^ (self class selectors select: [ :each | (each beginsWith: 'example_') and: [each numArgs isZero]])
 ]
