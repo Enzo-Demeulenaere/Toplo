@@ -1,6 +1,6 @@
 Class {
 	#name : #ToSandBox,
-	#superclass : #Object,
+	#superclass : #ToExampleTest,
 	#category : #'Toplo-Examples'
 }
 
