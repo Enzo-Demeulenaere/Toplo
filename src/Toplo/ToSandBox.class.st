@@ -1,6 +1,6 @@
 Class {
 	#name : #ToSandBox,
-	#superclass : #Object,
+	#superclass : #ToExampleTest,
 	#category : #'Toplo-Examples'
 }
 
@@ -13,6 +13,7 @@ ToSandBox class >> example_2RootFramesInOBlWorld [
 	ToInnerWindow new
 		title: 'Frame 2';
 		openInWorld
+		
 ]
 
 { #category : #combobox }
