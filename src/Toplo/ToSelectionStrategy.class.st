@@ -141,7 +141,8 @@ ToSelectionStrategy >> deselectAll [
 ToSelectionStrategy >> deselectIndex: index [
 
 	self isNone ifTrue: [ self invalidOperation ].
-	selectionModel deselectIndex: index
+	selectionModel deselectIndex: index.
+	self markPointedPosition: index
 ]
 
 { #category : #'event management' }
@@ -293,7 +294,7 @@ ToSelectionStrategy >> offsetPositionForInsert: aStartPosition itemCount: anItem
 	| selected |
 	selected := self selectedIndexes select: [ :idx |
 		            idx >= aStartPosition ].
-	selected do: [ :idx | self deselectIndex: idx ].
+	selected do: [ :idx | selectionModel deselectIndex: idx ].
 	selected do: [ :idx |
 		self currentIndex = idx ifTrue: [
 			self currentIndex: idx + anItemCount ].
@@ -336,7 +337,7 @@ ToSelectionStrategy >> pivot: anIndex [
 { #category : #'private - selection managing' }
 ToSelectionStrategy >> select: aFirstIndex to: aLastIndex [
 
-	(self isMultiple ) ifFalse: [ self invalidOperation ].
+	self isMultiple ifFalse: [ self invalidOperation ].
 	selectionModel select: aFirstIndex to: aLastIndex
 ]
 
@@ -398,18 +399,19 @@ ToSelectionStrategy >> selectPreviousIn: anElement event: aShortcutEvent [
 { #category : #'selection managing' }
 ToSelectionStrategy >> selectToIndex: index [
 
-	| indexes |
+	| curr |
 	self isNone ifTrue: [ self invalidOperation ].
-	indexes := self selectedIndexes.
-	indexes ifEmpty: [ ^ self selectIndex: index ].
-	indexes first < index ifTrue: [
-		self deselectAll.
+	curr := self currentIndex.
+	curr < index ifTrue: [ 
 		self markPointedPosition: index.
-		^ self select: indexes first to: index ].
-	indexes last >= index ifFalse: [ ^ self ].
-	self deselectAll.
-	self markPointedPosition: indexes last.
-	^ self select: index to: indexes last
+		self pivot: curr.
+		self distance: index - curr.
+		^ self select: curr to: index ].
+	curr >= index ifFalse: [ ^ self ].
+	self markPointedPosition: index.
+	self pivot: curr.
+	self distance: index - curr.
+	^ self select: index to: curr
 ]
 
 { #category : #'selection accessing' }
