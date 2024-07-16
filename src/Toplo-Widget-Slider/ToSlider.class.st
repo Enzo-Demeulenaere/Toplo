@@ -122,13 +122,6 @@ ToSlider >> bar: aBlElement [
 	bar := aBlElement
 ]
 
-{ #category : #'api - bounds' }
-ToSlider >> barDefaultColor [ 
-
-	^ Color lightGray
-
-]
-
 { #category : #accessing }
 ToSlider >> barLength [
 
@@ -262,11 +255,6 @@ ToSlider >> coloredBar: aBlElement [
 	coloredBar := aBlElement 
 ]
 
-{ #category : #accessing }
-ToSlider >> coloredBarDefaultColor [
-	^ Color green alpha: 0.6
-]
-
 { #category : #'api - slider' }
 ToSlider >> decrementValue: aValue [
 
@@ -287,29 +275,21 @@ ToSlider >> defaultBar [
 
 	^ BlElement new
 		  geometry: (BlRoundedRectangleGeometry cornerRadius: 10);
-		  background: self barDefaultColor;
 		  size: size;
-		constraintsDo: [ :c | c ignoreByLayout ];
+		  constraintsDo: [ :c | c ignoreByLayout ];
 		  yourself
 ]
 
 { #category : #'api - bounds' }
 ToSlider >> defaultBarLength [
 
-	^ 100
+	^ 200
 ]
 
 { #category : #'api - bounds' }
 ToSlider >> defaultBarThickness [
 
-	^ 20
-]
-
-{ #category : #'api - bounds' }
-ToSlider >> defaultColor [
-
-	^ Color veryDarkGray
-
+	^ 30
 ]
 
 { #category : #accessing }
@@ -322,8 +302,7 @@ ToSlider >> defaultColoredBar [
 
 	^ BlElement new
 		  geometry: (BlRoundedRectangleGeometry cornerRadius: 10);
-		  background: self coloredBarDefaultColor;
-		constraintsDo: [ :c | c ignoreByLayout ];
+		  constraintsDo: [ :c | c ignoreByLayout ];
 		  size: size;
 		  yourself
 ]
@@ -337,9 +316,8 @@ ToSlider >> defaultHandle [
 		        ifVertical: [ barThickness @ 5 ].
 
 	elt := BlElement new
-		       background: self handleDefaultColor;
 		       geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
-		constraintsDo: [ :c | c ignoreByLayout ];
+		       constraintsDo: [ :c | c ignoreByLayout ];
 		       size: size;
 		       transformDo: [ :t | "so the position is now the center"
 			       t translateBy: size negated / 2 ];
@@ -351,13 +329,13 @@ ToSlider >> defaultHandle [
 { #category : #'api - bounds' }
 ToSlider >> defaultMarginLength [
 
-	^ 5
+	^ 30
 ]
 
 { #category : #'api - bounds' }
 ToSlider >> defaultMarginThickness [
 
-	^ 5
+	^ 20
 ]
 
 { #category : #'api - bounds' }
@@ -390,12 +368,6 @@ ToSlider >> handle: aBlElement [
 	handle := aBlElement
 ]
 
-{ #category : #'api - bounds' }
-ToSlider >> handleDefaultColor [
-
-	^ Color green
-]
-
 { #category : #accessing }
 ToSlider >> horizontal: aBoolean [
 
@@ -426,12 +398,9 @@ ToSlider >> initialize [
 	segmented := false.
 	self initializeSizes.
 	self widgetSize: self defaultSize.
-	self background: self defaultColor.
 	self layout: BlFrameLayout new.
 	self initializeValues.
 	self initializeParts.
-	self initializeValueLabels
-	"self initializeEvents"
 ]
 
 { #category : #initialization }
@@ -473,11 +442,9 @@ ToSlider >> initializeParts [
 
 	self handle: self defaultHandle.
 	self positionDefaultHandle.
-	self addChild: self handle
+	self addChild: self handle.
 
-	"initialize segments if segmented"
-
-	"self initializeButtons."
+	self initializeValueLabels.
 ]
 
 { #category : #initialization }
@@ -498,7 +465,7 @@ ToSlider >> initializeValueLabels [
 						             (BlFontSizeAttribute size: 15).
 						             BlFontWeightAttribute bold });
 		            constraintsDo: [ :c |
-			            c padding: (BlInsets horizontal: 15).
+			            c padding: (BlInsets horizontal: 10).
 			            c frame horizontal alignLeft.
 			            c frame vertical alignCenter ].
 
@@ -508,7 +475,7 @@ ToSlider >> initializeValueLabels [
 						             (BlFontSizeAttribute size: 15).
 						             BlFontWeightAttribute bold });
 		            constraintsDo: [ :c |
-			            c padding: (BlInsets horizontal: 15).
+			            c padding: (BlInsets horizontal: 10).
 			            c frame horizontal alignRight.
 			            c frame vertical alignCenter ].
 
@@ -524,12 +491,6 @@ ToSlider >> initializeValueLabels [
 	self addChild: minLabel.
 	self addChild: valueLabel.
 	self addChild: maxLabel.
-
-	self callBack: [ :v |
-		valueLabel text: (v rounded asRopedText attributes: {
-					 (BlTextForegroundAttribute paint: Color black).
-					 (BlFontSizeAttribute size: 15).
-					 BlFontWeightAttribute bold }) ]
 ]
 
 { #category : #initialization }
@@ -667,7 +628,7 @@ ToSlider >> name: aString [
 ToSlider >> nearestValue: aValue [
 
 	| val minResult tmp tmp2 values |
-	self isSegmented ifFalse: [ ^ aValue].
+	self isSegmented ifFalse: [ ^ aValue rounded].
 	values := self segmentedValues.
 	val := values first.
 	minResult := (aValue - val) abs.
@@ -677,7 +638,13 @@ ToSlider >> nearestValue: aValue [
 		tmp2 < minResult ifTrue: [
 			minResult := tmp2.
 			val := tmp ] ].
-	^ val
+	^ val rounded
+]
+
+{ #category : #'instance creation' }
+ToSlider >> newRawSkin [ 
+
+	^ ToSliderDefaultSkin new
 ]
 
 { #category : #'api - transformations' }
@@ -819,7 +786,7 @@ ToSlider >> valueAtCoord: aPoint [
 { #category : #'api - transformations' }
 ToSlider >> valueAtX: aPoint [
 
-	| dist valueDiff value coeff |
+	| dist valueDiff coeff |
 	dist := (aPoint - bar position) x.
 	dist = 0
 		ifTrue: [ value := minValue ]
@@ -828,14 +795,14 @@ ToSlider >> valueAtX: aPoint [
 			coeff := barLength / dist.
 			value := minValue + (valueDiff / coeff) ].
 	value := self nearestValue: value.
-	
-	^ value asFloat
+
+	^ value
 ]
 
 { #category : #'api - transformations' }
 ToSlider >> valueAtY: aPoint [
 
-	| dist valueDiff value coeff |
+	| dist valueDiff coeff |
 	dist := bar position y + barLength - aPoint y.
 	dist = 0
 		ifTrue: [ value := minValue ]
@@ -844,7 +811,7 @@ ToSlider >> valueAtY: aPoint [
 			coeff := barLength / dist.
 			value := minValue + (valueDiff / coeff) ].
 	value := self nearestValue: value.
-	^ value asFloat
+	^ value
 ]
 
 { #category : #accessing }
