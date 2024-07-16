@@ -152,7 +152,8 @@ ToSlider >> barThickness: aNumber [
 ToSlider >> basicSetValue: aNumber [
 
 	value := aNumber.
-	self callBack ifNotNil: [ :e | e value: value ]
+	self valueLabel text: value asRopedText.
+	self callBack ifNotNil: [ :e | e value: value ].
 ]
 
 { #category : #accessing }
@@ -459,7 +460,7 @@ ToSlider >> initializeSizes [
 { #category : #initialization }
 ToSlider >> initializeValueLabels [
 
-	minLabel := BlTextElement new
+	minLabel := BlAttributedTextElement new
 		            text: (self minValue asRopedText attributes: {
 						             (BlTextForegroundAttribute paint: Color white).
 						             (BlFontSizeAttribute size: 15).
@@ -469,7 +470,7 @@ ToSlider >> initializeValueLabels [
 			            c frame horizontal alignLeft.
 			            c frame vertical alignCenter ].
 
-	maxLabel := BlTextElement new
+	maxLabel := BlAttributedTextElement new
 		            text: (self maxValue asRopedText attributes: {
 						             (BlTextForegroundAttribute paint: Color white).
 						             (BlFontSizeAttribute size: 15).
@@ -479,7 +480,7 @@ ToSlider >> initializeValueLabels [
 			            c frame horizontal alignRight.
 			            c frame vertical alignCenter ].
 
-	valueLabel := BlTextElement new
+	valueLabel := BlAttributedTextElement new
 		              text: (self value asRopedText attributes: {
 						               (BlTextForegroundAttribute paint: Color black).
 						               (BlFontSizeAttribute size: 15).
@@ -491,6 +492,7 @@ ToSlider >> initializeValueLabels [
 	self addChild: minLabel.
 	self addChild: valueLabel.
 	self addChild: maxLabel.
+
 ]
 
 { #category : #initialization }
@@ -588,9 +590,9 @@ ToSlider >> moveHandleTo: aPosition [
 	newPos := aPosition.
 	"deal with segmentation"
 	self isSegmented ifTrue: [
-		| value |
-		value := self valueAtCoord: aPosition.
-		newPos := self valueToCoord: value ].
+		| tmpValue |
+		tmpValue := self valueAtCoord: aPosition.
+		newPos := self valueToCoord: tmpValue ].
 	self
 		ifHorizontal: [
 			| newPosX |
