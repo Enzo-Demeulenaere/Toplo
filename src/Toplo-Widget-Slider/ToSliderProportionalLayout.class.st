@@ -26,7 +26,8 @@ Class {
 		'leftRatio',
 		'rightRatio',
 		'topRatio',
-		'bottomRatio'
+		'bottomRatio',
+		'handleRatio'
 	],
 	#category : #'Toplo-Widget-Slider-core'
 }
@@ -323,13 +324,10 @@ ToSliderProportionalLayout >> defaultColoredBar [
 
 	^ BlElement new
 		  geometry: (BlRoundedRectangleGeometry cornerRadius: 5);
-		  constraintsDo: [ :c |
-			  c proportional horizontal
-				  left: self leftRatio;
-				  right: self rightRatio.
-			  c proportional vertical
-				  top: self topRatio;
-				  bottom: self bottomRatio ] yourself
+		constraintsDo: [ :c | c proportional vertical top: self topRatio; bottom: self bottomRatio.
+			c proportional horizontal left: self leftRatio; right: self leftRatio ];
+		"size: size;"
+		  yourself
 ]
 
 { #category : #'api - bounds' }
@@ -342,10 +340,16 @@ ToSliderProportionalLayout >> defaultHandle [
 
 	elt := BlElement new
 		       geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
-		       constraintsDo: [ :c | c ignoreByLayout ];
-		       size: size;
-		       transformDo: [ :t | "so the position is now the center"
-			       t translateBy: size x negated / 2 @ 0];
+		       constraintsDo: [ :c |
+			       c proportional vertical
+				       top: self topRatio;
+				       bottom: self bottomRatio.
+			       c proportional horizontal
+				       left: self handleRatio - 0.01;
+				       right: self handleRatio + 0.01 ];
+		       "size: size;
+		       transformDo: [ :t | so the position is now the center
+			       t translateBy: size x negated / 2 @ 0 ];"
 			       yourself.
 
 	^ elt
@@ -384,6 +388,12 @@ ToSliderProportionalLayout >> handle [
 { #category : #accessing }
 ToSliderProportionalLayout >> handle: aBlElement [ 
 	handle := aBlElement
+]
+
+{ #category : #accessing }
+ToSliderProportionalLayout >> handleRatio [ 
+
+	^ handleRatio 
 ]
 
 { #category : #accessing }
@@ -459,8 +469,8 @@ ToSliderProportionalLayout >> initializeParts [
 	self addChild: self coloredBar.
 
 	self handle: self defaultHandle.
-	self positionDefaultHandle.
-	self bar addChild: self handle.
+"	self positionDefaultHandle."
+	self addChild: self handle.
 
 	self initializeValueLabels
 ]
@@ -471,7 +481,8 @@ ToSliderProportionalLayout >> initializeRatios [
 	leftRatio := 1 / 8.
 	rightRatio := 7 / 8.
 	topRatio := 2 / 8.
-	bottomRatio := 6 / 8
+	bottomRatio := 6 / 8.
+	handleRatio := leftRatio 
 ]
 
 { #category : #initialization }
@@ -826,7 +837,7 @@ ToSliderProportionalLayout >> updateColoredBarTo: aPosition [
 	self
 		ifHorizontal: [
 			coloredBar position: bar position.
-			coloredBar size: (aPosition - coloredBar position) x @ barThickness ]
+			coloredBar size: (aPosition) x @ barThickness ]
 		ifVertical: [
 			coloredBar position: aPosition x - (barThickness / 2) @ aPosition y.
 			coloredBar size:

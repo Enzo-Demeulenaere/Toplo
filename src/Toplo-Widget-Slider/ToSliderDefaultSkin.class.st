@@ -19,7 +19,7 @@ ToSliderDefaultSkin >> installSkinEvent: anEvent [
 	anEvent elementDo: [ :e |
 		e background: Color veryVeryLightGray.
 		e bar background: Color veryLightGray.
-		e coloredBar background: (Color darkGray alpha: 0.6).
+		e coloredBar background: (Color lightBlue alpha: 0.6).
 		e handle background: Color darkGray.
 		e minLabel attributesBuilder attributes: self minMaxAttributes.
 		e maxLabel attributesBuilder attributes: self minMaxAttributes.
