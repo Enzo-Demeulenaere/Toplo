@@ -754,8 +754,8 @@ ToSlider >> stepValue [
 { #category : #accessing }
 ToSlider >> stepValue: aNumber [
 
-	stepValue := aNumber 
-	
+	stepValue := aNumber.
+	segmentedValues := nil
 ]
 
 { #category : #'api - transformations' }
