@@ -157,7 +157,7 @@ ToSliderProportionalLayout >> beSmooth [
 ToSliderProportionalLayout >> beVertical [
 
 	self horizontal: false.
-	self buildVertical
+	self rebuild
 ]
 
 { #category : #accessing }
@@ -247,13 +247,6 @@ ToSliderProportionalLayout >> decrementValue: aValue [
 { #category : #'api - bounds' }
 ToSliderProportionalLayout >> defaultBar [
 
-	| size |
-	size := self
-		        ifHorizontal: [
-		        self defaultBarLength @ self defaultBarThickness ]
-		        ifVertical: [
-		        self defaultBarThickness @ self defaultBarLength ].
-
 	^ BlElement new
 		  geometry: (BlRoundedRectangleGeometry cornerRadius: 5);
 		  constraintsDo: [ :c |
@@ -266,40 +259,25 @@ ToSliderProportionalLayout >> defaultBar [
 		  yourself
 ]
 
-{ #category : #'api - bounds' }
-ToSliderProportionalLayout >> defaultBarLength [
-
-	^ 200
-]
-
-{ #category : #'api - bounds' }
-ToSliderProportionalLayout >> defaultBarThickness [
-
-	^ 30
-]
-
 { #category : #accessing }
 ToSliderProportionalLayout >> defaultColoredBar [
 
-	| size |
-	size := self
-		        ifHorizontal: [ 0 @ self defaultBarThickness ]
-		        ifVertical: [ self defaultBarThickness @ 0.1 ].
-
 	^ BlElement new
 		  geometry: (BlRoundedRectangleGeometry cornerRadius: 5);
-		constraintsDo: [ :c | c proportional vertical top: self topRatio; bottom: self bottomRatio.
-			c proportional horizontal left: self leftRatio; right: self leftRatio ];
-		"size: size;"
-		  yourself
+		  constraintsDo: [ :c |
+			  c proportional vertical
+				  top: self topRatio;
+				  bottom: self bottomRatio.
+			  c proportional horizontal
+				  left: self leftRatio;
+				  right: self leftRatio ];
+			yourself
 ]
 
 { #category : #'api - bounds' }
 ToSliderProportionalLayout >> defaultHandle [
 
-	| elt |
-
-	elt := BlElement new
+	^ BlElement new
 		       geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
 		       constraintsDo: [ :c |
 			       c proportional vertical
@@ -308,37 +286,14 @@ ToSliderProportionalLayout >> defaultHandle [
 			       c proportional horizontal
 				       left: self handleRatio - 0.01;
 				       right: self handleRatio + 0.01 ];
-		       "size: size;
-		       transformDo: [ :t | so the position is now the center
-			       t translateBy: size x negated / 2 @ 0 ];"
 			       yourself.
 
-	^ elt
-]
-
-{ #category : #'api - bounds' }
-ToSliderProportionalLayout >> defaultMarginLength [
-
-	^ 30
-]
-
-{ #category : #'api - bounds' }
-ToSliderProportionalLayout >> defaultMarginThickness [
-
-	^ 20
 ]
 
 { #category : #'api - bounds' }
 ToSliderProportionalLayout >> defaultSize [
 	
 	^ 250 @ 50
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> direction [
-	"Returns true if horizontal else false"
-	^ self ifHorizontal: [ true ]
-			 ifVertical: [ false ].
 ]
 
 { #category : #accessing }
@@ -427,18 +382,14 @@ ToSliderProportionalLayout >> initializeLabel [
 { #category : #initialization }
 ToSliderProportionalLayout >> initializeParts [
 
-	self bar: self defaultBar.
-	"self positionDefaultBar: self bar."
-	self addChild: self bar.
+	bar := self defaultBar.
+	self addChild: bar.
 
+	coloredBar := self defaultColoredBar.
+	self addChild: coloredBar.
 
-	self coloredBar: self defaultColoredBar.
-	"self positionDefaultBar: self coloredBar."
-	self addChild: self coloredBar.
-
-	self handle: self defaultHandle.
-"	self positionDefaultHandle."
-	self addChild: self handle.
+	handle := self defaultHandle.
+	self addChild: handle.
 
 	self initializeValueLabels
 ]
@@ -667,6 +618,7 @@ ToSliderProportionalLayout >> positionDefaultHandle [
 { #category : #building }
 ToSliderProportionalLayout >> rebuild [
 
+	self extent: self extent transposed.
 	self
 		ifHorizontal: [ self buildHorizontal ]
 		ifVertical: [ self buildVertical ].
