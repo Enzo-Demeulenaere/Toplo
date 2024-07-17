@@ -397,6 +397,14 @@ ToSliderProportionalLayout >> handleRatio [
 ]
 
 { #category : #accessing }
+ToSliderProportionalLayout >> handleRatio: aNumber [
+
+	handleRatio := aNumber.
+	self updateHandle.
+	self updateColoredBar
+]
+
+{ #category : #accessing }
 ToSliderProportionalLayout >> horizontal: aBoolean [
 
 	isHorizontal := aBoolean 
@@ -646,13 +654,17 @@ ToSliderProportionalLayout >> moveHandleTo: aPosition [
 		newPos := self valueToCoord: tmpValue ].
 	self
 		ifHorizontal: [
-			| newPosX |
+			| newRatio |
+			newRatio := aPosition x / self width.
+			newRatio := newRatio beBetween: self leftRatio and: self rightRatio. 
+			self handleRatio: newRatio
+			"| newPosX |
 			newPosX := newPos x.
 			newPos x < bar position x ifTrue: [ newPosX := bar position x ].
 			newPos x > (bar position x + bar width) ifTrue: [
 				newPosX := bar position x + bar width ].
-			newPos := newPosX - bar position x @ handle position y .
-			handle position: newPos ]
+			newPos := newPosX - bar position x @ handle position y.
+			handle position: newPos " ]
 		ifVertical: [
 			| newPosY |
 			newPosY := newPos y.
@@ -832,6 +844,12 @@ ToSliderProportionalLayout >> topRatio: anObject [
 ]
 
 { #category : #'api - transformations' }
+ToSliderProportionalLayout >> updateColoredBar [
+
+	self coloredBar constraintsDo: [ :c | c proportional horizontal right: self handleRatio ]
+]
+
+{ #category : #'api - transformations' }
 ToSliderProportionalLayout >> updateColoredBarTo: aPosition [
 
 	self
@@ -842,6 +860,12 @@ ToSliderProportionalLayout >> updateColoredBarTo: aPosition [
 			coloredBar position: aPosition x - (barThickness / 2) @ aPosition y.
 			coloredBar size:
 				barThickness @ (bar position y + barLength - aPosition y) ]
+]
+
+{ #category : #'as yet unclassified' }
+ToSliderProportionalLayout >> updateHandle [ 
+
+	handle constraintsDo: [ :c | c proportional horizontal left: self handleRatio -0.01; right: self handleRatio +0.01 ]
 ]
 
 { #category : #accessing }
