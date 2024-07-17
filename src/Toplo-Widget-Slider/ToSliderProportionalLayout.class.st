@@ -2,7 +2,6 @@ Class {
 	#name : #ToSliderProportionalLayout,
 	#superclass : #ToElement,
 	#instVars : [
-		'widgetSize',
 		'handle',
 		'bar',
 		'coloredBar',
@@ -10,10 +9,6 @@ Class {
 		'minValue',
 		'maxValue',
 		'stepValue',
-		'barThickness',
-		'barLength',
-		'marginThickness',
-		'marginLength',
 		'segmented',
 		'segmentedValues',
 		'callBack',
@@ -126,32 +121,6 @@ ToSliderProportionalLayout >> bar: aBlElement [
 	bar := aBlElement
 ]
 
-{ #category : #accessing }
-ToSliderProportionalLayout >> barLength [
-
-	^ barLength
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> barLength: aNumber [
-
-	barLength := aNumber.
-	self rebuild
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> barThickness [ 
-
-	^ barThickness 
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> barThickness: aNumber [
-
-	barThickness := aNumber.
-	self rebuild
-]
-
 { #category : #'api - values' }
 ToSliderProportionalLayout >> basicSetValue: aNumber [
 
@@ -206,17 +175,12 @@ ToSliderProportionalLayout >> bottomRatio: anObject [
 { #category : #building }
 ToSliderProportionalLayout >> buildHorizontal [
 
-	widgetSize y > widgetSize x ifTrue: [
-		self widgetSize: widgetSize y @ widgetSize x ].
 	self removeParts.
 	self initializeParts
 ]
 
 { #category : #building }
 ToSliderProportionalLayout >> buildVertical [
-
-	widgetSize y > widgetSize x ifFalse: [
-		self widgetSize: widgetSize y @ widgetSize x ].
 
 	self removeParts.
 	self initializeParts
@@ -333,10 +297,7 @@ ToSliderProportionalLayout >> defaultColoredBar [
 { #category : #'api - bounds' }
 ToSliderProportionalLayout >> defaultHandle [
 
-	| size elt |
-	size := self
-		        ifHorizontal: [ 5 @ barThickness ]
-		        ifVertical: [ barThickness @ 5 ].
+	| elt |
 
 	elt := BlElement new
 		       geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
@@ -432,9 +393,7 @@ ToSliderProportionalLayout >> initialize [
 	super initialize.
 	isHorizontal := true.
 	segmented := false.
-	self initializeSizes.
 	self initializeRatios.
-	self widgetSize: self defaultSize.
 	self layout: BlProportionalLayout new.
 	self initializeValues.
 	self initializeParts
@@ -491,15 +450,6 @@ ToSliderProportionalLayout >> initializeRatios [
 	topRatio := 2 / 8.
 	bottomRatio := 6 / 8.
 	handleRatio := leftRatio 
-]
-
-{ #category : #initialization }
-ToSliderProportionalLayout >> initializeSizes [ 
-
-	barLength := self defaultBarLength.
-	barThickness := self defaultBarThickness.
-	marginLength := self defaultMarginLength.
-	marginThickness := self defaultMarginThickness.
 ]
 
 { #category : #initialization }
@@ -586,32 +536,6 @@ ToSliderProportionalLayout >> leftRatio: anObject [
 ]
 
 { #category : #accessing }
-ToSliderProportionalLayout >> marginLength [
-
-	^ marginLength
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> marginLength: aNumber [
-
-	marginLength := aNumber.
-	self rebuild
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> marginThickness [ 
-
-	^ marginThickness 
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> marginThickness: aNumber [
-
-	marginThickness := aNumber.
-	self rebuild
-]
-
-{ #category : #accessing }
 ToSliderProportionalLayout >> maxLabel [
 
 	^ maxLabel
@@ -661,7 +585,7 @@ ToSliderProportionalLayout >> moveHandleTo: aPosition [
 		ifHorizontal: [
 			| newRatio |
 			newRatio := aPosition x / self width.
-			newRatio := newRatio beBetween: self leftRatio and: self rightRatio. 
+			newRatio := newRatio beBetween: self leftRatio and: self rightRatio.
 			self handleRatio: newRatio
 			"| newPosX |
 			newPosX := newPos x.
@@ -671,14 +595,14 @@ ToSliderProportionalLayout >> moveHandleTo: aPosition [
 			newPos := newPosX - bar position x @ handle position y.
 			handle position: newPos " ]
 		ifVertical: [
-			| newPosY |
+			"| newPosY |
 			newPosY := newPos y.
 			newPos y < bar position y ifTrue: [ newPosY := bar position y ].
 			newPos y > (bar position y + barLength) ifTrue: [
 				newPosY := bar position y + barLength ].
 			newPos := handle position x @ newPosY.
-			handle position: newPos ].
-	self updateColoredBarTo: newPos.
+			handle position: newPos" ].
+	"self updateColoredBarTo: newPos."
 	self basicSetValue: (self valueAtCoord: newPos)
 ]
 
@@ -854,19 +778,6 @@ ToSliderProportionalLayout >> updateColoredBar [
 	self coloredBar constraintsDo: [ :c | c proportional horizontal right: self handleRatio ]
 ]
 
-{ #category : #'api - transformations' }
-ToSliderProportionalLayout >> updateColoredBarTo: aPosition [
-
-	self
-		ifHorizontal: [
-			coloredBar position: bar position.
-			coloredBar size: (aPosition) x @ barThickness ]
-		ifVertical: [
-			coloredBar position: aPosition x - (barThickness / 2) @ aPosition y.
-			coloredBar size:
-				barThickness @ (bar position y + barLength - aPosition y) ]
-]
-
 { #category : #'as yet unclassified' }
 ToSliderProportionalLayout >> updateHandle [ 
 
@@ -890,30 +801,32 @@ ToSliderProportionalLayout >> valueAtCoord: aPoint [
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueAtX: aPoint [
 
-	| dist valueDiff coeff |
-	dist := (aPoint - bar position) x.
-	dist = 0
-		ifTrue: [ value := minValue ]
-		ifFalse: [
-			valueDiff := maxValue - minValue.
-			coeff := barLength / dist.
-			value := minValue + (valueDiff / coeff) ].
-	value := self nearestValue: value.
-
+	| valueDiff coeff ratio ratioDist newValue|
+	ratio := aPoint x / self width.
+	ratio := ratio beBetween: self leftRatio and: self rightRatio.
+	ratioDist := ratio - self leftRatio.
+	ratioDist = 0 
+	ifTrue: [ newValue := minValue ] 
+	ifFalse: [
+		valueDiff := maxValue - minValue.
+		 coeff := (self rightRatio - self leftRatio) / ratioDist.
+		newValue := minValue + (valueDiff /coeff)  ].
+	value := self nearestValue: newValue.
 	^ value
+
 ]
 
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueAtY: aPoint [
 
-	| dist valueDiff coeff |
+	"| dist valueDiff coeff |
 	dist := bar position y + barLength - aPoint y.
 	dist = 0
 		ifTrue: [ value := minValue ]
 		ifFalse: [
 			valueDiff := maxValue - minValue.
 			coeff := barLength / dist.
-			value := minValue + (valueDiff / coeff) ].
+			value := minValue + (valueDiff / coeff) ]."
 	value := self nearestValue: value.
 	^ value
 ]
@@ -935,36 +848,23 @@ ToSliderProportionalLayout >> valueToCoord: aNumber [
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueToX: aNumber [
 
-	| dist valueDiff coeff |
+	"| dist valueDiff coeff |
 	valueDiff := aNumber - minValue.
 	coeff := (valueDiff / (maxValue - minValue)) asFloat.
 	dist := marginLength + (coeff * barLength).
 	self forceLocalLayout.
-	"This is needed so handle position != 0"
-	^ dist @ handle position y
+	""This is needed so handle position != 0""
+	^ dist @ handle position y"
 ]
 
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueToY: aNumber [
 
-	| dist valueDiff coeff |
+	"| dist valueDiff coeff |
 	valueDiff := aNumber - minValue.
 	coeff := (valueDiff / (maxValue - minValue)) asFloat.
 	dist := marginLength + barLength - (coeff * barLength).
 	self forceLocalLayout.
-	"This is needed so handle position != 0"
-	^ handle position x @ dist
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> widgetSize [ 
-
-	^ widgetSize 
-]
-
-{ #category : #accessing }
-ToSliderProportionalLayout >> widgetSize: aNumber [
-
-	widgetSize := aNumber.
-	self size: aNumber 
+	""This is needed so handle position != 0""
+	^ handle position x @ dist"
 ]
