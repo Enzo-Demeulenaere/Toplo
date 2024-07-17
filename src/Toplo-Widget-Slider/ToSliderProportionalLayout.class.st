@@ -511,10 +511,11 @@ ToSliderProportionalLayout >> initializeValueLabels [
 						             (BlFontSizeAttribute size: 15).
 						             BlFontWeightAttribute bold });
 		            constraintsDo: [ :c |
-			c ignoreByLayout.
-			            c padding: (BlInsets horizontal: 10).
+			            "c padding: (BlInsets horizontal: 10).
 			            c frame horizontal alignLeft.
-			            c frame vertical alignCenter ].
+			            c frame vertical alignCenter"
+							c proportional vertical top: 0.45; bottom: 0.55.
+							c proportional horizontal left: self leftRatio - 0.1 ; right: self leftRatio -0.05 ].
 
 	maxLabel := BlAttributedTextElement new
 		            text: (self maxValue asRopedText attributes: {
@@ -522,10 +523,12 @@ ToSliderProportionalLayout >> initializeValueLabels [
 						             (BlFontSizeAttribute size: 15).
 						             BlFontWeightAttribute bold });
 		            constraintsDo: [ :c |
-			c ignoreByLayout .
+			            "c ignoreByLayout.
 			            c padding: (BlInsets horizontal: 10).
 			            c frame horizontal alignRight.
-			            c frame vertical alignCenter ].
+			            c frame vertical alignCenter"
+			c proportional vertical top: 0.45; bottom: 0.55.
+							c proportional horizontal left: self rightRatio + 0.05 ; right: self rightRatio +0.1 ].
 
 	valueLabel := BlAttributedTextElement new
 		              text: (self value asRopedText attributes: {
@@ -533,9 +536,11 @@ ToSliderProportionalLayout >> initializeValueLabels [
 						               (BlFontSizeAttribute size: 15).
 						               BlFontWeightAttribute bold });
 		              constraintsDo: [ :c |
-				c ignoreByLayout.
+			              "c ignoreByLayout.
 			              c frame horizontal alignCenter.
-			              c frame vertical alignCenter ].
+			              c frame vertical alignCenter "
+			c proportional vertical top: 0.45; bottom: 0.55.
+			c proportional horizontal left: 0.45; right: 0.55.].
 
 	self addChild: minLabel.
 	self addChild: valueLabel.
