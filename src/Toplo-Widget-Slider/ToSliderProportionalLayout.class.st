@@ -39,6 +39,56 @@ ToSliderProportionalLayout class >> beVertical [
 	^ self new beVertical 
 ]
 
+{ #category : #example }
+ToSliderProportionalLayout class >> exampleHorizontal [
+	"The values of the slider are also written in the transcript"
+
+	<script>
+self beHorizontal openInSpace
+]
+
+{ #category : #testing }
+ToSliderProportionalLayout class >> exampleHorizontalSegmented [
+
+	<script>
+	self new beSegmented openInSpace
+]
+
+{ #category : #testing }
+ToSliderProportionalLayout class >> exampleHorizontalSegmentedWithValue [
+
+	<script>
+	|slider|
+	slider := self new beSegmented.
+	slider segmentedValues: { 0. 5. 15. 27. 38. 50 }.
+	slider openInSpace
+]
+
+{ #category : #example }
+ToSliderProportionalLayout class >> exampleVertical [
+	"The values of the slider are also written in the transcript"
+
+	<script>
+	self beVertical openInSpace
+]
+
+{ #category : #testing }
+ToSliderProportionalLayout class >> exampleVerticalSegmented [
+
+	<script>
+	self beVertical beSegmented openInSpace
+]
+
+{ #category : #testing }
+ToSliderProportionalLayout class >> exampleVerticalSegmentedWithValue [
+
+	<script>
+	| slider |
+	slider := self beVertical beSegmented.
+	slider segmentedValues: { 0. 5. 15. 27. 38. 50 }.
+	slider openInSpace
+]
+
 { #category : #accessing }
 ToSliderProportionalLayout class >> label: aString [ 
 
@@ -69,48 +119,6 @@ ToSliderProportionalLayout class >> readOnlyLabel: aString [
 	^ slider
 ]
 
-{ #category : #example }
-ToSliderProportionalLayout class >> simpleExampleHorizontal [
-	"The values of the slider are also written in the transcript"
-
-	<script>
-	| slider textElt container |
-	slider := self beHorizontal.
-	textElt := BlTextElement new position: slider defaultSize.
-
-	textElt text: slider value asRopedText.
-
-	slider callBack: [ :value | textElt text: value asRopedText ].
-
-	container := BlElement new clipChildren: false.
-
-	container addChild: slider.
-	container addChild: textElt.
-
-	container openInSpace
-]
-
-{ #category : #example }
-ToSliderProportionalLayout class >> simpleExampleVertical [
-	"The values of the slider are also written in the transcript"
-
-	<script>
-	| slider textElt container |
-	slider := self beVertical.
-	textElt := BlTextElement new position: slider defaultSize.
-
-	textElt text: slider value asRopedText.
-
-	slider callBack: [ :value | textElt text: value asRopedText ].
-
-	container := BlElement new clipChildren: false.
-
-	container addChild: slider.
-	container addChild: textElt.
-
-	container openInSpace
-]
-
 { #category : #accessing }
 ToSliderProportionalLayout >> bar [
 	^ bar
@@ -132,6 +140,9 @@ ToSliderProportionalLayout >> basicSetValue: aNumber [
 { #category : #accessing }
 ToSliderProportionalLayout >> beHorizontal [
 
+	self isHorizontal ifTrue: [ ^ self ].
+	self whenLayoutedDoOnce: [ self extent: self extent transposed ].
+	self swapRatios.
 	self horizontal: true.
 	self rebuild
 ]
@@ -141,21 +152,22 @@ ToSliderProportionalLayout >> beSegmented [
 
 	self stepValue
 		ifNil: [ self error: 'Cannot segment a slider with a nil stepValue' ]
-		ifNotNil: [ self segmented: true].
-	self rebuild
+		ifNotNil: [ self segmented: true ].
 ]
 
 { #category : #building }
 ToSliderProportionalLayout >> beSmooth [
 
 	self segmented: false.
-	self segmentedValues: nil.
-	self rebuild
+	self segmentedValues: nil
 ]
 
 { #category : #accessing }
 ToSliderProportionalLayout >> beVertical [
 
+	self isHorizontal ifFalse: [ ^ self ].
+	self whenLayoutedDoOnce: [ self extent: self extent transposed ].
+	self swapRatios.
 	self horizontal: false.
 	self rebuild
 ]
@@ -170,20 +182,6 @@ ToSliderProportionalLayout >> bottomRatio [
 ToSliderProportionalLayout >> bottomRatio: anObject [
 
 	bottomRatio := anObject
-]
-
-{ #category : #building }
-ToSliderProportionalLayout >> buildHorizontal [
-
-	self removeParts.
-	self initializeParts
-]
-
-{ #category : #building }
-ToSliderProportionalLayout >> buildVertical [
-
-	self removeParts.
-	self initializeParts
 ]
 
 { #category : #accessing }
@@ -201,6 +199,7 @@ ToSliderProportionalLayout >> callBack: aBlock [
 { #category : #'as yet unclassified' }
 ToSliderProportionalLayout >> changeMaxValueLabelTo: aValue [
 
+	"method not used/called"
 	maxLabel text: (aValue asRopedText attributes: {
 				 (BlTextForegroundAttribute paint: Color white).
 				 (BlFontSizeAttribute size: 12).
@@ -211,6 +210,7 @@ ToSliderProportionalLayout >> changeMaxValueLabelTo: aValue [
 { #category : #'as yet unclassified' }
 ToSliderProportionalLayout >> changeMinValueLabelTo: aValue [
 
+	"method not used/called"
 	minLabel text: (aValue asRopedText attributes: {
 				 (BlTextForegroundAttribute paint: Color white).
 				 (BlFontSizeAttribute size: 12).
@@ -305,7 +305,7 @@ ToSliderProportionalLayout >> defaultHandle [
 
 { #category : #'api - bounds' }
 ToSliderProportionalLayout >> defaultSize [
-	
+
 	^ 250 @ 50
 ]
 
@@ -414,7 +414,7 @@ ToSliderProportionalLayout >> initializeRatios [
 	rightRatio := 7 / 8.
 	topRatio := 2 / 8.
 	bottomRatio := 6 / 8.
-	handleRatio := leftRatio 
+	handleRatio := leftRatio
 ]
 
 { #category : #initialization }
@@ -566,21 +566,12 @@ ToSliderProportionalLayout >> moveHandleTo: aPosition [
 			| newRatio |
 			newRatio := newPos x / self width.
 			newRatio := newRatio beBetween: self leftRatio and: self rightRatio.
-			self handleRatio: newRatio
-			 ]
-		ifVertical: [ "| newPosY |
-			newPosY := newPos y.
-			newPos y < bar position y ifTrue: [ newPosY := bar position y ].
-			newPos y > (bar position y + barLength) ifTrue: [
-				newPosY := bar position y + barLength ].
-			newPos := handle position x @ newPosY.
-			handle position: newPos"
+			self handleRatio: newRatio ]
+		ifVertical: [ 
 			| newRatio |
 			newRatio := newPos y / self height.
 			newRatio := newRatio beBetween: self topRatio and: self bottomRatio.
-			self handleRatio: newRatio
-			 ].
-	"self updateColoredBarTo: newPos."
+			self handleRatio: newRatio ].
 	self basicSetValue: (self valueAtCoord: newPos)
 ]
 
@@ -619,39 +610,12 @@ ToSliderProportionalLayout >> newRawSkin [
 	^ ToSliderDefaultSkin new
 ]
 
-{ #category : #'api - transformations' }
-ToSliderProportionalLayout >> positionDefaultBar: aBar [
-
-	self
-		ifHorizontal: [
-			aBar position:
-				self defaultMarginLength @ self defaultMarginThickness ]
-		ifVertical: [
-			aBar position:
-				self defaultMarginThickness @ self defaultMarginLength ]
-]
-
-{ #category : #'api - transformations' }
-ToSliderProportionalLayout >> positionDefaultHandle [
-
-	self whenLayoutedDoOnce: [
-		self
-			ifHorizontal: [ handle position: 0@0 ]
-			ifVertical: [ handle position: bar position + (0 @ bar height) ] ]
-]
-
 { #category : #building }
 ToSliderProportionalLayout >> rebuild [
 
-	self extent: self extent transposed.
-	self swapRatios.
-	self
-		ifHorizontal: [ self buildHorizontal ]
-		ifVertical: [ self buildVertical ].
-		
-	"self moveHandleTo: self handle position."
-	self reinstallSkin.
-
+	self removeParts.
+	self initializeParts.
+	self reinstallSkin
 ]
 
 { #category : #'as yet unclassified' }
@@ -665,9 +629,8 @@ ToSliderProportionalLayout >> reinstallSkin [
 { #category : #removing }
 ToSliderProportionalLayout >> removeParts [
 
-	self removeChildren. 
-	bar := nil.
-	handle := nil
+	self removeChildren.
+
 ]
 
 { #category : #accessing }
@@ -705,38 +668,21 @@ ToSliderProportionalLayout >> segmentedValues: aCollection [
 { #category : #initialization }
 ToSliderProportionalLayout >> setToMax [
 
-	"this method is created with a button that would set to max in the widget"
-	self setValue: self maxValue.
+	self setValue: self maxValue
 ]
 
 { #category : #initialization }
-ToSliderProportionalLayout >> setToMin [ 
+ToSliderProportionalLayout >> setToMin [
 
-	"this method is created with a button that would set to max in the widget"
-	self setValue: self minValue.
+	self setValue: self minValue
 ]
 
 { #category : #accessing }
 ToSliderProportionalLayout >> setValue: aNumber [
 
 	| newValue |
-	newValue := aNumber.
-	aNumber < self minValue ifTrue: [ newValue := minValue ].
-	aNumber > self maxValue ifTrue: [ newValue := maxValue ].
-
+	newValue := aNumber beBetween: minValue and: maxValue.
 	self moveHandleTo: (self valueToCoord: newValue)
-]
-
-{ #category : #'api - bounds' }
-ToSliderProportionalLayout >> size: aValue [
-	"just to keep the widgset size"
-
-	super size: aValue.
-	
-	" for now do not support resize
-	
-	self isBuildSlider ifTrue: [ self rebuildSlider ]
-	"
 ]
 
 { #category : #accessing }
@@ -762,7 +708,9 @@ ToSliderProportionalLayout >> swapRatios [
 
 	vAux := rightRatio.
 	rightRatio := bottomRatio.
-	bottomRatio := vAux
+	bottomRatio := vAux.
+
+	handleRatio := bottomRatio 
 ]
 
 { #category : #accessing }
@@ -869,32 +817,19 @@ ToSliderProportionalLayout >> valueToX: aNumber [
 	valueDiff := maxValue - minValue.
 	ratio := aNumber - minValue.
 	ratioDist := (self rightRatio - self leftRatio) * self width.
-	newRatio := self leftRatio* self width + (ratio * ratioDist / valueDiff).
+	newRatio := self leftRatio * self width
+	            + (ratio * ratioDist / valueDiff).
 	^ newRatio asFloat @ 0
-	"| dist valueDiff coeff |
-	valueDiff := aNumber - minValue.
-	coeff := (valueDiff / (maxValue - minValue)) asFloat.
-	dist := marginLength + (coeff * barLength).
-	self forceLocalLayout.
-	""This is needed so handle position != 0""
-	^ dist @ handle position y"
 ]
 
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueToY: aNumber [
-	"| dist valueDiff coeff |
-	valueDiff := aNumber - minValue.
-	coeff := (valueDiff / (maxValue - minValue)) asFloat.
-	dist := marginLength + barLength - (coeff * barLength).
-	self forceLocalLayout.
-	""This is needed so handle position != 0""
-	^ handle position x @ dist"
+
 	| valueDiff ratio ratioDist newRatio |
 	valueDiff := maxValue - minValue.
 	ratio := aNumber - minValue.
-	ratioDist := self bottomRatio - self topRatio * self height.
-	newRatio := self topRatio * self height
-	            + (ratio * ratioDist / valueDiff).
+	ratioDist := (self bottomRatio - self topRatio) * self height.
+	newRatio := self bottomRatio * self height
+	            - (ratio * ratioDist / valueDiff).
 	^ 0 @ newRatio asFloat
-	
 ]

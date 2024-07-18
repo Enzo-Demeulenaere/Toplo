@@ -70,7 +70,7 @@ ToSlider class >> readOnlyLabel: aString [
 	^ slider
 ]
 
-{ #category : #example }
+{ #category : #'as yet unclassified' }
 ToSlider class >> simpleExampleHorizontal [
 	"The values of the slider are also written in the transcript"
 
@@ -91,7 +91,7 @@ ToSlider class >> simpleExampleHorizontal [
 	container openInSpace
 ]
 
-{ #category : #example }
+{ #category : #'as yet unclassified' }
 ToSlider class >> simpleExampleVertical [
 	"The values of the slider are also written in the transcript"
 
@@ -187,7 +187,7 @@ ToSlider >> beVertical [
 	self buildVertical
 ]
 
-{ #category : #building }
+{ #category : #'as yet unclassified' }
 ToSlider >> buildHorizontal [
 
 	widgetSize y > widgetSize x ifTrue: [
@@ -196,7 +196,7 @@ ToSlider >> buildHorizontal [
 	self initializeParts
 ]
 
-{ #category : #building }
+{ #category : #'as yet unclassified' }
 ToSlider >> buildVertical [
 
 	widgetSize y > widgetSize x ifFalse: [
@@ -649,7 +649,7 @@ ToSlider >> newRawSkin [
 	^ ToSliderDefaultSkin new
 ]
 
-{ #category : #'api - transformations' }
+{ #category : #'as yet unclassified' }
 ToSlider >> positionDefaultBar: aBar [
 
 	self
@@ -661,7 +661,7 @@ ToSlider >> positionDefaultBar: aBar [
 				self defaultMarginThickness @ self defaultMarginLength ]
 ]
 
-{ #category : #'api - transformations' }
+{ #category : #'as yet unclassified' }
 ToSlider >> positionDefaultHandle [
 
 	self
@@ -726,14 +726,11 @@ ToSlider >> setToMin [
 ToSlider >> setValue: aNumber [
 
 	| newValue |
-	newValue := aNumber.
-	aNumber < self minValue ifTrue: [ newValue := minValue ].
-	aNumber > self maxValue ifTrue: [ newValue := maxValue ].
-
+	newValue := aNumber beBetween: minValue and: maxValue.
 	self moveHandleTo: (self valueToCoord: newValue)
 ]
 
-{ #category : #'api - bounds' }
+{ #category : #'as yet unclassified' }
 ToSlider >> size: aValue [
 	"just to keep the widgset size"
 
