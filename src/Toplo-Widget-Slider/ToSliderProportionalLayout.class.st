@@ -265,29 +265,42 @@ ToSliderProportionalLayout >> defaultColoredBar [
 	^ BlElement new
 		  geometry: (BlRoundedRectangleGeometry cornerRadius: 5);
 		  constraintsDo: [ :c |
-			  c proportional vertical
+			self ifHorizontal: [ c proportional vertical
 				  top: self topRatio;
 				  bottom: self bottomRatio.
 			  c proportional horizontal
 				  left: self leftRatio;
-				  right: self leftRatio ];
-			yourself
+				  right: self leftRatio ] 
+			ifVertical: [ c proportional vertical
+				  top: self bottomRatio;
+				  bottom: self bottomRatio.
+			  c proportional horizontal
+				  left: self leftRatio;
+				  right: self rightRatio ].
+			   ];
+		  yourself
 ]
 
 { #category : #'api - bounds' }
 ToSliderProportionalLayout >> defaultHandle [
 
 	^ BlElement new
-		       geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
-		       constraintsDo: [ :c |
-			       c proportional vertical
-				       top: self topRatio;
-				       bottom: self bottomRatio.
-			       c proportional horizontal
-				       left: self handleRatio - 0.01;
-				       right: self handleRatio + 0.01 ];
-			       yourself.
-
+		  geometry: (BlRoundedRectangleGeometry cornerRadius: 2);
+		  constraintsDo: [ :c |
+			self ifHorizontal: [ c proportional vertical
+				  top: self topRatio;
+				  bottom: self bottomRatio.
+			  c proportional horizontal
+				  left: self handleRatio - 0.01;
+				  right: self handleRatio + 0.01 ] 
+			ifVertical: [ c proportional vertical
+				  top: self handleRatio - 0.01;
+				  bottom: self handleRatio +0.01.
+			  c proportional horizontal
+				  left: self leftRatio ;
+				  right: self rightRatio ].
+			   ];
+		  yourself
 ]
 
 { #category : #'api - bounds' }
@@ -413,24 +426,37 @@ ToSliderProportionalLayout >> initializeValueLabels [
 						             (BlFontSizeAttribute size: 15).
 						             BlFontWeightAttribute bold });
 		            constraintsDo: [ :c |
-			            "c padding: (BlInsets horizontal: 10).
-			            c frame horizontal alignLeft.
-			            c frame vertical alignCenter"
-							c proportional vertical top: 0.45; bottom: 0.55.
-							c proportional horizontal left: self leftRatio - 0.1 ; right: self leftRatio -0.05 ].
+							self ifHorizontal: [ c proportional vertical
+				            top: 0.45;
+				            bottom: 0.55.
+			            c proportional horizontal
+				            left: self leftRatio - 0.1;
+				            right: self leftRatio - 0.05 ] ifVertical: [ c proportional horizontal
+				            left: 0.45;
+				            right: 0.55.
+			            c proportional vertical
+				            top: self bottomRatio + 0.05;
+				            bottom: self bottomRatio + 0.05 ].
+			             ].
 
 	maxLabel := BlAttributedTextElement new
 		            text: (self maxValue asRopedText attributes: {
 						             (BlTextForegroundAttribute paint: Color white).
 						             (BlFontSizeAttribute size: 15).
 						             BlFontWeightAttribute bold });
-		            constraintsDo: [ :c |
-			            "c ignoreByLayout.
-			            c padding: (BlInsets horizontal: 10).
-			            c frame horizontal alignRight.
-			            c frame vertical alignCenter"
-			c proportional vertical top: 0.45; bottom: 0.55.
-							c proportional horizontal left: self rightRatio + 0.05 ; right: self rightRatio +0.1 ].
+		            constraintsDo: [ :c | 
+						self ifHorizontal: [ c proportional vertical
+				            top: 0.45;
+				            bottom: 0.55.
+			            c proportional horizontal
+				            left: self rightRatio + 0.05;
+				            right: self rightRatio + 0.1 ] ifVertical: [ c proportional horizontal
+				            left: 0.45;
+				            right: 0.55.
+			            c proportional vertical
+				            top: self topRatio - 0.05;
+				            bottom: self topRatio - 0.05 ].
+			             ].
 
 	valueLabel := BlAttributedTextElement new
 		              text: (self value asRopedText attributes: {
@@ -438,11 +464,12 @@ ToSliderProportionalLayout >> initializeValueLabels [
 						               (BlFontSizeAttribute size: 15).
 						               BlFontWeightAttribute bold });
 		              constraintsDo: [ :c |
-			              "c ignoreByLayout.
-			              c frame horizontal alignCenter.
-			              c frame vertical alignCenter "
-			c proportional vertical top: 0.45; bottom: 0.55.
-			c proportional horizontal left: 0.45; right: 0.55.].
+			              c proportional vertical
+				              top: 0.45;
+				              bottom: 0.55.
+			              c proportional horizontal
+				              left: 0.45;
+				              right: 0.55 ].
 
 	self addChild: minLabel.
 	self addChild: valueLabel.
@@ -540,13 +567,7 @@ ToSliderProportionalLayout >> moveHandleTo: aPosition [
 			newRatio := newPos x / self width.
 			newRatio := newRatio beBetween: self leftRatio and: self rightRatio.
 			self handleRatio: newRatio
-			"| newPosX |
-			newPosX := newPos x.
-			newPos x < bar position x ifTrue: [ newPosX := bar position x ].
-			newPos x > (bar position x + bar width) ifTrue: [
-				newPosX := bar position x + bar width ].
-			newPos := newPosX - bar position x @ handle position y.
-			handle position: newPos " ]
+			 ]
 		ifVertical: [ "| newPosY |
 			newPosY := newPos y.
 			newPos y < bar position y ifTrue: [ newPosY := bar position y ].
@@ -554,6 +575,10 @@ ToSliderProportionalLayout >> moveHandleTo: aPosition [
 				newPosY := bar position y + barLength ].
 			newPos := handle position x @ newPosY.
 			handle position: newPos"
+			| newRatio |
+			newRatio := newPos y / self height.
+			newRatio := newRatio beBetween: self topRatio and: self bottomRatio.
+			self handleRatio: newRatio
 			 ].
 	"self updateColoredBarTo: newPos."
 	self basicSetValue: (self valueAtCoord: newPos)
@@ -619,10 +644,19 @@ ToSliderProportionalLayout >> positionDefaultHandle [
 ToSliderProportionalLayout >> rebuild [
 
 	self extent: self extent transposed.
+	self swapRatios.
 	self
 		ifHorizontal: [ self buildHorizontal ]
 		ifVertical: [ self buildVertical ].
+		
 	"self moveHandleTo: self handle position."
+	self reinstallSkin.
+
+]
+
+{ #category : #'as yet unclassified' }
+ToSliderProportionalLayout >> reinstallSkin [ 
+
 	self ensuredSkinManager
 		requestUninstallSkinIn: self;
 		requestInstallSkinIn: self
@@ -718,6 +752,19 @@ ToSliderProportionalLayout >> stepValue: aNumber [
 	segmentedValues := nil
 ]
 
+{ #category : #'as yet unclassified' }
+ToSliderProportionalLayout >> swapRatios [
+
+	| hAux vAux |
+	hAux := leftRatio.
+	leftRatio := topRatio.
+	topRatio := hAux.
+
+	vAux := rightRatio.
+	rightRatio := bottomRatio.
+	bottomRatio := vAux
+]
+
 { #category : #accessing }
 ToSliderProportionalLayout >> topRatio [
 
@@ -733,13 +780,23 @@ ToSliderProportionalLayout >> topRatio: anObject [
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> updateColoredBar [
 
-	self coloredBar constraintsDo: [ :c | c proportional horizontal right: self handleRatio ]
+	self coloredBar constraintsDo: [ :c |
+		self ifHorizontal: [ c proportional horizontal right: self handleRatio ] 
+		ifVertical: [ c proportional vertical top: self handleRatio ].
+		 ]
 ]
 
 { #category : #'as yet unclassified' }
-ToSliderProportionalLayout >> updateHandle [ 
+ToSliderProportionalLayout >> updateHandle [
 
-	handle constraintsDo: [ :c | c proportional horizontal left: self handleRatio -0.01; right: self handleRatio +0.01 ]
+	handle constraintsDo: [ :c |
+		self ifHorizontal: [ c proportional horizontal
+			left: self handleRatio - 0.01;
+			right: self handleRatio + 0.01 ] ifVertical: [ 
+			c proportional vertical
+			top: self handleRatio - 0.01;
+			bottom: self handleRatio + 0.01 ]. 
+		 ]
 ]
 
 { #category : #accessing }
@@ -776,15 +833,18 @@ ToSliderProportionalLayout >> valueAtX: aPoint [
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueAtY: aPoint [
 
-	"| dist valueDiff coeff |
-	dist := bar position y + barLength - aPoint y.
-	dist = 0
-		ifTrue: [ value := minValue ]
+	| valueDiff coeff ratio ratioDist newValue |
+	ratio := aPoint y / self height.
+	ratio := ratio beBetween: self bottomRatio and: self topRatio.
+	ratioDist := ratio - self topRatio.
+	"careful : topRatio is the lowest here"
+	ratioDist = 0
+		ifTrue: [ newValue := maxValue ]
 		ifFalse: [
-			
-			coeff := barLength / dist.
-			value := minValue + (valueDiff / coeff) ]."
-	value := self nearestValue: value.
+			valueDiff := maxValue - minValue.
+			coeff := self bottomRatio - self topRatio / ratioDist.
+			newValue := maxValue - (valueDiff / coeff) ].
+	value := self nearestValue: newValue.
 	^ value
 ]
 
@@ -822,7 +882,6 @@ ToSliderProportionalLayout >> valueToX: aNumber [
 
 { #category : #'api - transformations' }
 ToSliderProportionalLayout >> valueToY: aNumber [
-
 	"| dist valueDiff coeff |
 	valueDiff := aNumber - minValue.
 	coeff := (valueDiff / (maxValue - minValue)) asFloat.
@@ -830,4 +889,12 @@ ToSliderProportionalLayout >> valueToY: aNumber [
 	self forceLocalLayout.
 	""This is needed so handle position != 0""
 	^ handle position x @ dist"
+	| valueDiff ratio ratioDist newRatio |
+	valueDiff := maxValue - minValue.
+	ratio := aNumber - minValue.
+	ratioDist := self bottomRatio - self topRatio * self height.
+	newRatio := self topRatio * self height
+	            + (ratio * ratioDist / valueDiff).
+	^ 0 @ newRatio asFloat
+	
 ]
